@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    'llm' => [
+        // anthropic | fake
+        'driver' => env('LLM_DRIVER', 'anthropic'),
+        'anthropic' => [
+            'key' => env('ANTHROPIC_API_KEY', ''),
+            'model' => env('ANTHROPIC_MODEL', 'claude-haiku-5-5'),
+        ],
+    ],
+
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+
 ];
