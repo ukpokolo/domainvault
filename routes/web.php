@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\AiSearchController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [MarketplaceController::class, 'index'])->name('marketplace.index');
+Route::get('/ai-search', AiSearchController::class)->middleware('throttle:20,1')->name('marketplace.ai-search');
 Route::get('/domains/{domain}', [MarketplaceController::class, 'show'])->name('marketplace.show');
 
 Route::get('/dashboard', function () {
