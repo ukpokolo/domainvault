@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Stripe cannot send a CSRF token; the webhook is authenticated by its signature instead.
+        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
+
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
         ]);
