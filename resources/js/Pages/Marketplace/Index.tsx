@@ -73,7 +73,7 @@ export default function Index({ domains, filters, facets, chips, ai_query }: Pro
             <section className="mb-8 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 px-6 py-10 text-white shadow-lg sm:px-10">
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Find aged domains with real authority</h1>
                 <p className="mt-2 max-w-2xl text-indigo-100">
-                    Browse {domains.meta.total.toLocaleString()} vetted domains with verified backlink profiles.
+                    Browse vetted domains with verified backlink profiles, or describe what you need and let AI search do the filtering.
                 </p>
                 <form onSubmit={askAi} className="mt-6 flex max-w-2xl flex-col gap-2 sm:flex-row">
                     <input

@@ -87,3 +87,9 @@ it('shows the audit log newest first', function () {
     $this->actingAs($this->admin)->get('/admin/audit-log')->assertInertia(fn ($p) => $p
         ->has('logs.data', 2)->where('logs.data.0.action', 'domain.rejected')->where('logs.data.0.actor', $this->admin->name));
 });
+
+it('serialises every paginated admin prop with a meta block the UI relies on', function () {
+    $this->actingAs($this->admin)->get('/admin/audit-log')->assertInertia(fn ($p) => $p->has('logs.meta.last_page')->has('logs.meta.links'));
+    $this->actingAs($this->admin)->get('/admin/imports')->assertInertia(fn ($p) => $p->has('batches.meta.last_page')->has('batches.meta.links'));
+    $this->actingAs($this->admin)->get('/admin/review')->assertInertia(fn ($p) => $p->has('domains.meta.last_page'));
+});

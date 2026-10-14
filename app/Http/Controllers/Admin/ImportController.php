@@ -9,6 +9,7 @@ use App\Models\ImportBatch;
 use App\Services\Admin\AuditLogger;
 use App\Services\Import\DomainCsvImporter;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,7 +22,7 @@ class ImportController extends Controller
         $this->authorize('viewAny', ImportBatch::class);
 
         return Inertia::render('Admin/Imports', [
-            'batches' => ImportBatch::with('user:id,name')->latest('id')->paginate(10)->through(fn (ImportBatch $b) => [
+            'batches' => JsonResource::collection(ImportBatch::with('user:id,name')->latest('id')->paginate(10)->through(fn (ImportBatch $b) => [
                 'id' => $b->id,
                 'original_name' => $b->original_name,
                 'status' => $b->status,
@@ -32,7 +33,7 @@ class ImportController extends Controller
                 'has_error_report' => $b->error_report_path !== null,
                 'user' => $b->user->name,
                 'created_at' => $b->created_at->toIso8601String(),
-            ]),
+            ])),
             'columns' => ['required' => DomainCsvImporter::REQUIRED, 'optional' => DomainCsvImporter::OPTIONAL],
         ]);
     }
