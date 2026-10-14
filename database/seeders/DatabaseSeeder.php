@@ -2,24 +2,27 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Demo credentials only; documented in the README.
+        User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@domainvault.test',
+            'password' => 'password',
+        ])->forceFill(['role' => UserRole::Admin])->save();
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Buyer User',
+            'email' => 'buyer@domainvault.test',
+            'password' => 'password',
         ]);
+
+        $this->call(DomainSeeder::class);
     }
 }
