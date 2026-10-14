@@ -60,3 +60,13 @@ export type PageProps<
     };
     flash?: { success?: string; error?: string };
 };
+
+export interface Order {
+    id: number;
+    status: 'pending' | 'paid' | 'failed';
+    total_cents: number;
+    failure_reason: string | null;
+    paid_at: string | null;
+    created_at: string;
+    items: { id: number; domain_id: number; name: string; price_cents: number }[];
+}

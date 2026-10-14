@@ -1,8 +1,8 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthorityBadge from '@/Components/AuthorityBadge';
 import SiteLayout from '@/Layouts/SiteLayout';
 import { money } from '@/lib/format';
-import { Domain } from '@/types';
+import { Domain, PageProps } from '@/types';
 
 const Stat = ({ label, value }: { label: string; value: string | number }) => (
     <div className="rounded-xl bg-slate-50 p-4">
@@ -12,6 +12,7 @@ const Stat = ({ label, value }: { label: string; value: string | number }) => (
 );
 
 export default function Show({ domain }: { domain: Domain }) {
+    const { auth } = usePage<PageProps>().props;
     const sold = domain.status === 'sold';
 
     return (
@@ -45,7 +46,18 @@ export default function Show({ domain }: { domain: Domain }) {
                     {sold ? (
                         <p className="mt-4 rounded-lg bg-slate-100 p-3 text-sm text-slate-600">This domain has been sold.</p>
                     ) : (
-                        <p className="mt-4 text-sm text-slate-500">Add to cart is enabled once the cart feature lands.</p>
+                        auth.user ? (
+                            <button
+                                onClick={() => router.post(route('cart.store', domain.id), {}, { preserveScroll: true })}
+                                className="mt-5 w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500"
+                            >
+                                Add to cart
+                            </button>
+                        ) : (
+                            <Link href={route('login')} className="mt-5 block w-full rounded-lg bg-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-indigo-500">
+                                Log in to buy
+                            </Link>
+                        )
                     )}
                 </aside>
             </div>
