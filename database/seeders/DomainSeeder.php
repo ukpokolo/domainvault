@@ -84,7 +84,7 @@ class DomainSeeder extends Seeder
             0 => $stem.self::SUFFIXES[array_rand(self::SUFFIXES)],
             1 => self::PREFIXES[array_rand(self::PREFIXES)].$stem,
             2 => $stem.random_int(1, 99),
-            default => $stem.$stem[0].substr($stem, -2),
+            default => self::PREFIXES[array_rand(self::PREFIXES)].$stem.self::SUFFIXES[array_rand(self::SUFFIXES)],
         };
     }
 
