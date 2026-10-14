@@ -29,3 +29,8 @@ it('forbids buyers from the admin middleware', function () {
 it('redirects guests to login', function () {
     $this->get('/_admin-probe')->assertRedirect('/login');
 });
+
+it('sends admins and buyers to their home after login via /dashboard', function () {
+    $this->actingAs(User::factory()->admin()->create())->get('/dashboard')->assertRedirect('/admin');
+    $this->actingAs(User::factory()->create())->get('/dashboard')->assertRedirect('/orders');
+});

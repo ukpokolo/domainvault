@@ -12,8 +12,8 @@ use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StripeWebhookController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', [MarketplaceController::class, 'index'])->name('marketplace.index');
 Route::get('/ai-search', AiSearchController::class)->middleware('throttle:20,1')->name('marketplace.ai-search');
@@ -43,9 +43,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/audit-log', AuditLogController::class)->name('audit-log');
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Breeze redirects here after login: send admins to the admin panel and buyers to their orders.
+Route::get('/dashboard', fn (Request $request) => $request->user()->isAdmin()
+    ? redirect()->route('admin.dashboard')
+    : redirect()->route('orders.index'))->middleware('auth')->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
