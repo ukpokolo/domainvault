@@ -1,12 +1,20 @@
-import { Head, router } from '@inertiajs/react';
-import { FormEvent, useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import { FormEvent, useEffect, useState } from 'react';
 import DomainCard from '@/Components/DomainCard';
 import Pagination from '@/Components/Pagination';
 import SiteLayout from '@/Layouts/SiteLayout';
 import { Domain, Filters, Paginated } from '@/types';
 
+interface Chip {
+    key: string;
+    label: string;
+    remove_url: string;
+}
+
 interface Props {
     domains: Paginated<Domain>;
+    chips: Chip[];
+    ai_query: string | null;
     filters: Filters;
     facets: { tlds: string[]; niches: string[] };
 }
@@ -22,8 +30,23 @@ const SORTS: Record<string, string> = {
 
 const field = 'mt-1 block w-full rounded-md border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500';
 
-export default function Index({ domains, filters, facets }: Props) {
+export default function Index({ domains, filters, facets, chips, ai_query }: Props) {
     const [form, setForm] = useState<Filters>(filters);
+    const [aiText, setAiText] = useState(ai_query ?? '');
+    const [aiBusy, setAiBusy] = useState(false);
+
+    // Keep local form state in sync when filters change from outside the form (chips, AI search).
+    useEffect(() => setForm(filters), [filters]);
+    useEffect(() => setAiText(ai_query ?? ''), [ai_query]);
+
+    const askAi = (e: FormEvent) => {
+        e.preventDefault();
+        if (aiText.trim().length < 3) return;
+        router.get(route('marketplace.ai-search'), { query: aiText }, {
+            onStart: () => setAiBusy(true),
+            onFinish: () => setAiBusy(false),
+        });
+    };
 
     const visit = (next: Filters) => {
         const clean = Object.fromEntries(
@@ -52,16 +75,19 @@ export default function Index({ domains, filters, facets }: Props) {
                 <p className="mt-2 max-w-2xl text-indigo-100">
                     Browse {domains.meta.total.toLocaleString()} vetted domains with verified backlink profiles.
                 </p>
-                <form onSubmit={submit} className="mt-6 flex max-w-2xl gap-2">
+                <form onSubmit={askAi} className="mt-6 flex max-w-2xl flex-col gap-2 sm:flex-row">
                     <input
-                        type="search"
-                        value={form.q ?? ''}
-                        onChange={(e) => set('q', e.target.value)}
-                        placeholder="Search by name, niche or keyword…"
-                        aria-label="Search domains"
+                        type="text"
+                        value={aiText}
+                        onChange={(e) => setAiText(e.target.value)}
+                        placeholder='Try "10+ year old .com in fitness under $500"'
+                        aria-label="AI domain search"
+                        maxLength={200}
                         className="w-full rounded-lg border-0 px-4 py-3 text-slate-900 shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-white"
                     />
-                    <button className="rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">Search</button>
+                    <button disabled={aiBusy} className="shrink-0 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                        {aiBusy ? 'Thinking…' : '✨ AI search'}
+                    </button>
                 </form>
             </section>
 
@@ -69,6 +95,10 @@ export default function Index({ domains, filters, facets }: Props) {
                 <aside>
                     <form onSubmit={submit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Filters</h2>
+                        <label className="block text-sm font-medium">
+                            Keyword
+                            <input type="search" className={field} value={form.q ?? ''} onChange={(e) => set('q', e.target.value)} placeholder="Name, niche or note" />
+                        </label>
                         <label className="block text-sm font-medium">
                             TLD
                             <select className={field} value={form.tld ?? ''} onChange={(e) => set('tld', e.target.value)}>
@@ -103,6 +133,31 @@ export default function Index({ domains, filters, facets }: Props) {
                 </aside>
 
                 <section>
+                    {chips.length > 0 && (
+                        <div className="mb-4" data-testid="filter-chips">
+                            {ai_query && (
+                                <p className="mb-2 text-xs text-slate-500">
+                                    ✨ Interpreted “{ai_query}” as:
+                                </p>
+                            )}
+                            <ul className="flex flex-wrap gap-2">
+                                {chips.map((chip) => (
+                                    <li key={chip.key}>
+                                        <Link
+                                            href={chip.remove_url}
+                                            preserveScroll
+                                            aria-label={`Remove filter ${chip.label}`}
+                                            className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20 hover:bg-indigo-100"
+                                        >
+                                            {chip.label}
+                                            <span aria-hidden="true">×</span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <p className="text-sm text-slate-600" aria-live="polite">
                             {domains.meta.total === 0
